@@ -1,0 +1,135 @@
+
+
+Create table WAREHOUSE(
+W_ID INTEGER(1),  #2*W UNIQUE IDS
+W_NAME VARCHAR(10),
+W_STREET_1 VARCHAR(20),
+W_STREET_2 VARCHAR(20),
+W_CITY VARCHAR(20),
+W_STATE CHAR(2),
+W_ZIP CHAR(9),
+W_TAX NUMERIC(4,4), # SALES TAX
+W_YTD NUMERIC(12,2), #YEAR TO DATE BALANCE
+PRIMARY KEY(W_ID)
+
+);
+Create table DISTRICT(
+D_ID INTEGER(2), #UNIQUE IDS
+D_W_ID INTEGER(1), # 2*W UNIQUE IDS
+D_NAME VARCHAR(10),
+D_STREET_1 VARCHAR(20),
+D_STREET_2 VARCHAR(20),
+D_CITY VARCHAR(20),
+D_STATE CHAR(2),
+D_ZIP CHAR(9),
+D_TAX NUMERIC(4,4),
+D_YTD NUMERIC(12,2),
+D_NEXT_O_ID INTEGER(255), #UNIQUE IDS next available order number
+PRIMARY KEY(D_W_ID, D_ID),
+FOREIGN KEY(D_W_ID) REFERENCES WAREHOUSE(W_ID)
+);
+Create table CUSTOMER(
+C_ID INTEGER(255), # 96,000 unique IDs 3,000 are populated per district
+C_D_ID INTEGER(2), # 20 unique IDs
+C_W_ID INTEGER(1), #2*W unique IDs
+C_FIRST VARCHAR(16),
+C_MIDDLE CHAR(2),
+C_LAST VARCHAR(16),
+C_STREET_1 VARCHAR(20),
+C_STREET_2 VARCHAR(20),
+C_CITY VARCHAR(20),
+C_STATE CHAR(2),
+C_ZIP CHAR(9),
+C_PHONE CHAR(16),
+C_SINCE DATETIME,
+C_CREDIT CHAR(2), #"GC"=good, "BC"=bad
+C_CREDIT_LIM NUMERIC (12, 2),
+C_DISCOUNT NUMERIC(4, 4),
+C_BALANCE NUMERIC(12, 2),
+C_YTD_PAYMENT NUMERIC(12, 2),
+C_PAYMENT_CNT NUMERIC(4),
+C_DELIVERY_CNT NUMERIC(4),
+customerC_DATA VARCHAR( 500), # Miscellaneous information
+PRIMARY KEY(C_W_ID,C_D_ID,C_ID),
+FOREIGN KEY(C_W_ID,C_D_ID) REFERENCES DISTRICT(D_W_ID,D_ID)
+);
+
+CREATE TABLE HISTORY (
+H_C_ID INTEGER(255), #96,000 unique IDs
+H_C_D_ID INTEGER(20), #20 unique IDs
+H_C_W_ID INTEGER(10), #2*W unique IDs
+H_D_ID INTEGER(20), # 20 unique IDs
+H_W_ID INTEGER(100), #2*W unique IDs
+H_DATE DATETIME,
+H_AMOUNT NUMERIC(6, 2),
+H_DATA VARCHAR(24), # Miscellaneous information
+FOREIGN KEY(H_C_W_ID, H_C_D_ID, H_C_ID) REFERENCES  CUSTOMER(C_W_ID, C_D_ID, C_ID),
+FOREIGN KEY(H_W_ID, H_D_ID) REFERENCES DISTRICT(D_W_ID, D_ID)
+);
+
+CREATE TABLE ORDERR (
+O_ID INTEGER(255), #10,000,000 unique IDs
+O_D_ID INTEGER(20), #20 unique IDs
+O_W_ID INTEGER(10), #2*W unique IDs
+O_C_ID INTEGER(255), #96,000 unique IDs
+O_ENTRY_D DATETIME,
+O_CARRIER_ID INTEGER(2),#10 unique IDs, or null
+O_OL_CNT numeric(2),#Count of Order-Lines
+O_ALL_LOCAL numeric(1),
+Primary Key (O_W_ID, O_D_ID, O_ID),
+Foreign Key (O_W_ID, O_D_ID, O_C_ID)  references CUSTOMER (C_W_ID, C_D_ID, C_ID)
+);
+CREATE TABLE NEW_ORDER (
+NO_O_ID INTEGER(255), # 10,000,000 unique IDs
+NO_D_ID INTEGER(20), #20 unique IDs
+NO_W_ID INTEGER(10), #2*W unique IDs
+Primary Key (NO_W_ID, NO_D_ID, NO_O_ID),
+FOREIGN KEY(NO_W_ID, NO_D_ID, NO_O_ID) REFERENCES  ORDERR(O_W_ID, O_D_ID, O_ID)
+);
+
+
+CREATE TABLE ITEM (
+I_ID INTEGER(255), #200,000 unique IDs 100,000 items are populated
+I_IM_ID INTEGER(255), #200,000 unique IDs Image ID associated to Item
+I_NAME VARCHAR(24),
+I_PRICE numeric(5, 2),
+I_DATA VARCHAR(50), # Brand information
+Primary Key (I_ID)
+);
+CREATE TABLE STOCK (
+S_I_ID INTEGER(255), #200,000 unique IDs 100,000 populated per warehouse
+S_W_ID INTEGER(100), #2*W unique IDs
+S_QUANTITY numeric(4),
+S_DIST_01 char(24),
+S_DIST_02 char(24),
+S_DIST_03 char(24),
+S_DIST_04 char(24),
+S_DIST_05 char(24),
+S_DIST_06 char(24),
+S_DIST_07 char(24),
+S_DIST_08 char(24),
+S_DIST_09 char(24),
+S_DIST_10 char(24),
+S_YTD numeric(8),
+S_ORDER_CNT numeric(4),
+S_REMOTE_CNT numeric(4),
+S_DATA varchar(50),  #Make information
+Primary Key(S_W_ID, S_I_ID),
+Foreign Key(S_W_ID) references WAREHOUSE(W_ID),
+Foreign Key(S_I_ID)  references ITEM(I_ID)
+);
+CREATE TABLE ORDER_LINE (
+OL_O_ID INTEGER(255), #10,000,000 unique IDs
+OL_D_ID INTEGER(20), #20 unique IDs
+OL_W_ID INTEGER(10), #2*W unique IDs
+OL_NUMBER INTEGER(15), #15 unique IDs
+OL_I_ID INTEGER(255), #200,000 unique IDs
+OL_SUPPLY_W_ID INTEGER(100), # 2*W unique IDs
+OL_DELIVERY_D datetime, #or null
+OL_QUANTITY numeric(2),
+OL_AMOUNT NUMERIC(6,2),#signed numeric(6, 2),
+OL_DIST_INFO char(24),#fixed text, size 24
+Primary Key (OL_W_ID, OL_D_ID, OL_O_ID, OL_NUMBER),
+Foreign Key(OL_W_ID, OL_D_ID, OL_O_ID)  references ORDERR(O_W_ID, O_D_ID, O_ID),
+Foreign Key(OL_SUPPLY_W_ID, OL_I_ID)  references STOCK(S_W_ID, S_I_ID)
+);

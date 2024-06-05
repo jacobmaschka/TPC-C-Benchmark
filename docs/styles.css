@@ -1,0 +1,51 @@
+*{
+    padding: 2px;
+}
+
+body{
+    overflow-y: hidden;
+}
+
+h1{
+    text-align: center;
+}
+
+#info{
+    text-align: center;
+}
+
+#tbl_id{
+    border: 1px solid;
+    text-align: left;
+}
+
+th{
+    background-color: orange;
+}
+
+#tbl_id tr:hover {
+    background-color: black;
+}
+
+.error {
+    border-color: #FF1744;
+ }
+
+#tableButtons{
+    display: flex;
+    justify-content: center;
+    padding-top: 15px;
+ }
+
+ #tableDiv{
+    display: flex;
+    justify-content: center;
+ }
+
+ #submitButton{
+    display: flex;
+    justify-content: center;
+ }
+
+
+
