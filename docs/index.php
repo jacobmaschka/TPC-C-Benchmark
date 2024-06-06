@@ -9,7 +9,6 @@
 
     <title>New Order Page</title>
 
-
 </head>
 
 <body>
